@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    env_file:
+      - .env
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+
+  backend:
+    build: .
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    depends_on:
+      - db
