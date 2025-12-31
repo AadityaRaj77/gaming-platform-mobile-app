@@ -2,12 +2,14 @@ services:
   db:
     image: postgres:15
     restart: always
-    volumes:
-      - ./data/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: esports_app
+      POSTGRES_USER: LegendAR
+      POSTGRES_PASSWORD: 159753
     ports:
       - "5433:5432"
-    env_file:
-      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   adminer:
     image: adminer
@@ -23,3 +25,6 @@ services:
       - .env
     depends_on:
       - db
+
+volumes:
+  pgdata:
