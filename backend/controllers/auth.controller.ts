@@ -37,9 +37,9 @@ export const register = async (req: Request, res: Response) => {
     },
   });
 
-  const token = signToken({ userId: user.id });
+  const token = signToken({ userId: user.id.toString() });
 
-  return res.status(201).json({ token });
+  return res.status(201).json({ token, profileExists: false });
 };
 
  // POST /auth/login
@@ -59,8 +59,8 @@ export const login = async (req: Request, res: Response) => {
     where: {
       OR: [{ email: identifier }, { username: identifier }],
     },
+    include: { profile: true },
   });
-
   if (!user) {
     return res.status(401).json({ message: "Invalid credentials" });
   }
@@ -70,7 +70,7 @@ export const login = async (req: Request, res: Response) => {
     return res.status(401).json({ message: "Invalid credentials" });
   }
 
-  const token = signToken({ userId: user.id });
+  const token = signToken({ userId: user.id.toString() });
 
-  return res.json({ token });
+  return res.json({ token, profileExists: !!user.profile });
 };

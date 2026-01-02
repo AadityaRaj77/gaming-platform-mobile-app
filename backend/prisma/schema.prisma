@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -13,11 +7,109 @@ datasource db {
   provider = "postgresql"
 }
 
+enum GameGenre {
+  BATTLE_ROYALE
+  CLASH_ROYALE
+  FIGHTING
+  RACING
+  OPEN_WORLD
+  PLATFORMER
+  SHOOTER
+  PUZZLE
+  FUN
+  OTHER
+}
+enum GameType {
+  BGMI
+  VALORANT
+  CODM
+  FREE_FIRE
+  CLASH_ROYALE
+  OTHER
+}
+enum SocialPlatform {
+  INSTAGRAM
+  FACEBOOK
+  TWITCH
+  X
+  STEAM
+  OTHER
+}
+
+
 model User {
-  id        String   @id @default(uuid())
+  id        Int   @id @default(autoincrement())
   email     String   @unique
   username  String   @unique 
   password  String
+
+  profile   Profile?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+
+  bio       String?
+  avatarUrl String?
+
+  genres    ProfileGenre[]
+  games     ProfileGame[]
+  socials   SocialLink[]
+  achievements Achievement[]
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProfileGenre {
+  id        Int      @id @default(autoincrement())
+  profileId Int
+
+  genre     GameGenre
+
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, genre])
+}
+
+model ProfileGame {
+  id        Int      @id @default(autoincrement())
+  profileId Int
+
+  game      GameType
+  gameName  String?      // required ONLY if game == OTHER
+  gamingId  String       // user-entered in UI
+
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, game, gameName])
+}
+
+model Achievement {
+  id        Int      @id @default(autoincrement())
+  profileId Int
+
+  title     String
+  createdAt DateTime @default(now())
+
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model SocialLink {
+  id        Int      @id @default(autoincrement())
+  profileId Int
+
+  platform  SocialPlatform
+  label     String?    // required if platform == OTHER
+  url       String
+
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, platform, label])
 }
