@@ -6,6 +6,8 @@ import NeonButton from "../../components/NeonButton";
 import { Input } from "../../components/Input";
 import { colors } from "../../theme/colors";
 import { api } from "../../lib/api";
+import { saveToken } from "../../lib/auth";
+import { getMe } from "../../lib/api";
 
 export default function Login() {
   const router = useRouter();
@@ -21,14 +23,21 @@ export default function Login() {
 
     try {
       setLoading(true);
+
       const res = await api.post<{ token: string }>("/auth/login", {
         identifier,
         password,
       });
 
-      console.log("TOKEN:", res.data.token);
+      await saveToken(res.data.token);
 
-      // later: store token & route based on needsProfile
+      const me = await getMe();
+
+      if (me.needsProfile) {
+        router.replace("/(profile)/create");
+      } else {
+        router.replace("/");
+      }
     } catch (err: any) {
       Alert.alert(
         "Login failed",
